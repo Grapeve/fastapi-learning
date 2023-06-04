@@ -31,19 +31,37 @@ def hello_world():
     )
 
 
+@app.get("/has_register")
+def check_user(username: str, db: Session = Depends(get_db)):
+    has_register = db.query(models.User).filter(models.User.username == username).first()
+    if not has_register:
+        return JSONResponse(
+            status_code=201,
+            content={
+                'detail': 'username can be used'
+            }
+        )
+    else:
+        raise HTTPException(status_code=409, detail="Username has been use")
+
+
 @app.post("/register")
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
-    db_user = models.User(username=user.username, password=user.password)
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return JSONResponse(
-        status_code=201,
-        content={
-            'id': db_user.id,
-            'user': db_user.username
-        }
-    )
+    has_register = db.query(models.User).filter(models.User.username == user.username).first()
+    if not has_register:
+        db_user = models.User(username=user.username, password=user.password)
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+        return JSONResponse(
+            status_code=201,
+            content={
+                'id': db_user.id,
+                'user': db_user.username
+            }
+        )
+    else:
+        raise HTTPException(status_code=409, detail="Username has been use")
 
 
 # get请求中不能使用schemas
