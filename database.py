@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 # 数据库连接配置
 SQLALCHEMY_DATABASE_URI = (
-    "mysql+pymysql://root:xxxx@127.0.0.1:3306/fastapi-study?charset=utf8mb4"
+    "mysql+pymysql://root:jymysql@127.0.0.1:3306/db1?charset=utf8mb4"
     #                     密码
 )
 
