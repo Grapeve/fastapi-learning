@@ -38,11 +38,11 @@ def check_user(username: str, db: Session = Depends(get_db)):
         return JSONResponse(
             status_code=201,
             content={
-                'detail': 'username can be used'
+                'detail': 'username can be used.'
             }
         )
     else:
-        raise HTTPException(status_code=409, detail="Username has been use")
+        raise HTTPException(status_code=409, detail="Username has been used.")
 
 
 @app.post("/register")
@@ -61,7 +61,7 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
             }
         )
     else:
-        raise HTTPException(status_code=409, detail="Username has been use")
+        raise HTTPException(status_code=409, detail="Username has been used.")
 
 
 # get请求中不能使用schemas
@@ -103,11 +103,27 @@ def user_verify_login(username: str, token: str, db: Session = Depends(get_db)):
 def user_logout(user: schemas.UserLogout, db: Session = Depends(get_db)):
     db_user = db.query(models.User).filter(models.User.username == user.username,
                                            models.User.token == user.token).first()
+    if not db_user:
+        raise HTTPException(status_code=409, detail="The user is not logged in or the token is wrong or expired.")
+
     db_user.token = " "
     db.commit()
     return {
         "status": 204
     }
+
+
+@app.get('/user_show')
+def user_show(db: Session = Depends(get_db)):
+    db_users = list(db.query(models.User).all())
+    return JSONResponse(
+        status_code=200,
+        content={
+            "users": [{"id": user.id, "name": user.username,
+                       "password": user.password, "token": user.token}
+                      for user in db_users]
+        }
+    )
 
 
 if __name__ == '__main__':
